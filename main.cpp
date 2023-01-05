@@ -9,6 +9,8 @@
 #include "iomanip"
 
 int main() {
+    //freopen("1.in", "r", stdin);
+    //freopen("wa.out", "w", stdout);
     Database<User> usersData("users");
     Database<Book> booksData("books");
     Log log;
@@ -19,13 +21,13 @@ int main() {
     LoginStack login;
     Operation *op = nullptr;
     std::cout << std::fixed << std::setprecision(2);
-    //std::ios::sync_with_stdio(false);
-    //std::cin.tie(nullptr);
-    //std::cout.tie(nullptr);
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    std::cout.tie(nullptr);
     while (true) {
         try {
             std::string input;
-            getline(std::cin, input);
+            if (!getline(std::cin, input)) return 0;
             TokenScanner scanner(input);
             std::string key = scanner.nextToken();
             std::string second = scanner.nextToken();
