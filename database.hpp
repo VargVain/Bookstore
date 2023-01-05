@@ -27,7 +27,7 @@ public:
     void show_books(const std::string &para, const std::string &val);
 
 private:
-    static const int kMaxSize = 100;
+    static const int kMaxSize = 10;
     static const int keyLen = 32;
     struct Data {
         char key[keyLen];
@@ -159,11 +159,13 @@ void Database<T>::erase(const char *_key) {
                 }
             }
             else {
-                int max_temp = 0;
-                for (int j = 1; j < cur.size; ++j) {
-                    max_temp = cur.data[max_temp] > cur.data[j] ? max_temp : j;
+                if (_key == cur.max.key) {
+                    int max_temp = 0;
+                    for (int j = 1; j < cur.size; ++j) {
+                        max_temp = cur.data[max_temp] > cur.data[j] ? max_temp : j;
+                    }
+                    writeData(cur.data[max_temp], pos, -1);
                 }
-                writeData(cur.data[max_temp], pos, -1);
             }
             writeData(cur.data[i], pos, i);
             writeInt(cur.size, pos, 2);

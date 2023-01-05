@@ -37,6 +37,8 @@ public:
 
     bool checkLogin(const std::string &UserID);
 
+    void flush(const std::string &ord, const std::string &change);
+
 private:
     struct loginUser {
         char UserID[32];

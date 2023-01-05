@@ -92,6 +92,7 @@ void op_register::execute(LoginStack &, Database<User> &dtb, Database<Book> &, L
 op_passwd::op_passwd(const std::string &str) { input = str; }
 
 void op_passwd::check(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &) {
+    if (!dtb.find(login.getUser().c_str()).Privilege) error();
     TokenScanner scanner(input);
     count = scanner.getTokenCount();
     if (count != 3 && count != 4) error();
@@ -134,7 +135,8 @@ void op_passwd::execute(LoginStack &, Database<User> &dtb, Database<Book> &, Log
 
 op_useradd::op_useradd(const std::string &str) { input = str; }
 
-void op_useradd::check(LoginStack &, Database<User> &, Database<Book> &, Log &) {
+void op_useradd::check(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &) {
+    if (dtb.find(login.getUser().c_str()).Privilege < 3) error();
     TokenScanner scanner(input);
     if (scanner.getTokenCount() != 5) error();
     scanner.nextToken();
@@ -159,7 +161,8 @@ void op_useradd::execute(LoginStack &login, Database<User> &dtb, Database<Book> 
 
 op_delete::op_delete(const std::string &str) { input = str; }
 
-void op_delete::check(LoginStack &, Database<User> &, Database<Book> &, Log &) {
+void op_delete::check(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &) {
+    if (dtb.find(login.getUser().c_str()).Privilege < 7) error();
     TokenScanner scanner(input);
     if (scanner.getTokenCount() != 2) error();
     scanner.nextToken();
@@ -220,7 +223,8 @@ void op_buy::execute(LoginStack &, Database<User> &, Database<Book> &dtb, Log &l
 
 op_select::op_select(const std::string &str) { input = str; }
 
-void op_select::check(LoginStack &, Database<User> &, Database<Book> &, Log &) {
+void op_select::check(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &) {
+    if (dtb.find(login.getUser().c_str()).Privilege < 3) error();
     TokenScanner scanner(input);
     if (scanner.getTokenCount() != 2) error();
     scanner.nextToken();
@@ -249,7 +253,7 @@ void op_modify::check(LoginStack &login, Database<User> &dtb, Database<Book> &, 
 void op_modify::execute(LoginStack &login, Database<User> &, Database<Book> &dtb, Log &) {
     if (login.getISBN().empty()) error();
     Book cur = dtb.find(login.getISBN().c_str());
-    dtb.erase(cur.ISBN);
+    std::string temp = cur.ISBN;
     bool table[5] = {false, false, false, false, false};
     TokenScanner scanner(input);
     scanner.nextToken();
@@ -261,24 +265,28 @@ void op_modify::execute(LoginStack &login, Database<User> &, Database<Book> &dtb
         ::check(val, para);
         if (para == "ISBN") {
             if (table[0]) error();
-            if (!strcmp(val.c_str(), cur.ISBN)) error();
+            //if (!strcmp(val.c_str(), cur.ISBN)) error();
             if (dtb.find(val.c_str()).ISBN[0] != '\0') error();
-            for (int j = 0; j < val.length(); ++j) { cur.ISBN[j] = val[j]; }
+            memmove(cur.ISBN, val.c_str(), val.length() * sizeof(char));
+            //for (int j = 0; j < val.length(); ++j) { cur.ISBN[j] = val[j]; }
             table[0] = true;
         }
         else if (para == "name") {
             if (table[1]) error();
-            for (int j = 0; j < val.length(); ++j) { cur.BookName[j] = val[j]; }
+            memmove(cur.BookName, val.c_str(), val.length() * sizeof(char));
+            //for (int j = 0; j < val.length(); ++j) { cur.BookName[j] = val[j]; }
             table[1] = true;
         }
         else if (para == "author") {
             if (table[2]) error();
-            for (int j = 0; j < val.length(); ++j) { cur.Author[j] = val[j]; }
+            memmove(cur.Author, val.c_str(), val.length() * sizeof(char));
+            //for (int j = 0; j < val.length(); ++j) { cur.Author[j] = val[j]; }
             table[2] = true;
         }
         else if (para == "keyword") {
             if (table[3]) error();
-            for (int j = 0; j < val.length(); ++j) { cur.Keyword[j] = val[j]; }
+            memmove(cur.Keyword, val.c_str(), val.length() * sizeof(char));
+            //for (int j = 0; j < val.length(); ++j) { cur.Keyword[j] = val[j]; }
             table[3] = true;
         }
         else if (para == "price") {
@@ -288,8 +296,15 @@ void op_modify::execute(LoginStack &login, Database<User> &, Database<Book> &dtb
         }
         else error();
     }
+    if (table[0]) {
+        dtb.erase(temp.c_str());
+        dtb.insert(cur.ISBN, cur);
+        login.flush(temp, cur.ISBN);
+    }
+    else {
+        dtb.modify(cur.ISBN, cur);
+    }
     login.select(cur.ISBN);
-    dtb.insert(cur.ISBN, cur);
 }
 
 op_import::op_import(const std::string &str) { input = str; }

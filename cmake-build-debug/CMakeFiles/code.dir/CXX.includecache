@@ -36,6 +36,10 @@ iostream
 error.hpp
 /mnt/c/Dev/Bookstore/error.hpp
 
+/mnt/c/Dev/Bookstore/login.cpp
+login.hpp
+/mnt/c/Dev/Bookstore/login.hpp
+
 /mnt/c/Dev/Bookstore/login.hpp
 string
 -

@@ -86,10 +86,33 @@ bool LoginStack::checkLogin(const std::string &UserID) {
     int pos = 0;
     loginUser cur;
     while (pos < usersCount) {
+        file.open("login", std::ios::binary | std::ios::in | std::ios::out);
         file.seekg(pos * sizeof(loginUser));
         file.read((char *)(&cur), sizeof(loginUser));
         if (UserID == cur.UserID) return true;
         ++pos;
+        file.close();
     }
     return false;
+}
+
+void LoginStack::flush(const std::string &ord, const std::string &change) {
+    int pos = 0;
+    loginUser cur;
+    while (pos < usersCount) {
+        file.open("login", std::ios::binary | std::ios::in | std::ios::out);
+        file.seekg(pos * sizeof(loginUser));
+        file.read((char *)(&cur), sizeof(loginUser));
+        if (ord == cur.ISBN) {
+            file.close();
+            file.open("login", std::ios::binary | std::ios::in | std::ios::out);
+            for (int i = 0; i < change.length(); ++i) {
+                cur.ISBN[i] = change[i];
+            }
+            file.seekp(pos * sizeof(loginUser));
+            file.write((char *)(&cur), sizeof(loginUser));
+        }
+        ++pos;
+        file.close();
+    }
 }
