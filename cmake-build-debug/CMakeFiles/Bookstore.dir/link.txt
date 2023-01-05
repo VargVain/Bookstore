@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/Bookstore.dir/tokenScanner.cpp.o CMakeFiles/Bookstore.dir/error.cpp.o CMakeFiles/Bookstore.dir/login.cpp.o CMakeFiles/Bookstore.dir/stock.cpp.o CMakeFiles/Bookstore.dir/log.cpp.o CMakeFiles/Bookstore.dir/operation.cpp.o CMakeFiles/Bookstore.dir/main.cpp.o  -o Bookstore 

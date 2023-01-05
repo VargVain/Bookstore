@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/code.dir/tokenScanner.cpp.o CMakeFiles/code.dir/error.cpp.o CMakeFiles/code.dir/login.cpp.o CMakeFiles/code.dir/stock.cpp.o CMakeFiles/code.dir/log.cpp.o CMakeFiles/code.dir/operation.cpp.o CMakeFiles/code.dir/main.cpp.o  -o code 
