@@ -46,7 +46,7 @@ int main() {
             else if (key == "modify") op = new op_modify(input);
             else if (key == "import") op = new op_import(input);
             else if (key == "show" && second == "finance") op = new op_show_finance(input);
-            //else if (key == "log") op = new op_log(input);
+            else if (key == "log") op = new op_log(input);
             else {
                 error();
                 continue;

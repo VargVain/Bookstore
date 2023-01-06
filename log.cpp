@@ -11,11 +11,28 @@ Log::Log() {
         file.write((char *)(&count), sizeof(int));
     }
     file.close();
+    file.open("my_log");
+    if (!file) {
+        file.open("my_log", std::ios::out | std::ios::binary);
+        int count = 0;
+        file.seekp(0);
+        file.write((char *)(&count), sizeof(int));
+    }
+    file.close();
 }
 
 int Log::get_count() {
     int count;
     file.open("log", std::ios::binary | std::ios::in | std::ios::out);
+    file.seekg(0, std::ios::beg);
+    file.read((char *)(&count), sizeof(int));
+    file.close();
+    return count;
+}
+
+int Log::get_log_count() {
+    int count;
+    file.open("my_log", std::ios::binary | std::ios::in | std::ios::out);
     file.seekg(0, std::ios::beg);
     file.read((char *)(&count), sizeof(int));
     file.close();
@@ -67,6 +84,36 @@ void Log::show_finance(int count) {
         }
         file.close();
         std::cout << "+ " << pos << " - " << neg << '\n';
+    }
+}
+
+void Log::add_log(const std::string &str) {
+    char log[64];
+    memset(log, 0, sizeof(log));
+    for (int i = 0; i < str.length(); ++i) {
+        log[i] = str[i];
+    }
+    int count = get_log_count();
+    file.open("my_log", std::ios::binary | std::ios::in | std::ios::out);
+    file.seekp(64 * count * sizeof(char) + sizeof(int), std::ios::beg);
+    file.write((char *)(&log), sizeof(log));
+    file.close();
+    ++count;
+    file.open("my_log", std::ios::binary | std::ios::in | std::ios::out);
+    file.seekp(0, std::ios::beg);
+    file.write((char *)(&count), sizeof(int));
+    file.close();
+}
+
+void Log::show_log() {
+    int count = get_log_count();
+    for (int i = 0; i < count; ++i) {
+        char buf[64];
+        file.open("my_log", std::ios::binary | std::ios::in | std::ios::out);
+        file.seekg(64 * i * sizeof(char) + sizeof(int), std::ios::beg);
+        file.read((char *)(&buf), sizeof(buf));
+        file.close();
+        std::cout << std::string(buf) << '\n';
     }
 }
 

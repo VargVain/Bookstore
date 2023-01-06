@@ -243,4 +243,18 @@ private:
     int fcount;
 };
 
+class op_log : public Operation{
+public:
+    explicit op_log(const std::string &str);
+
+    ~op_log() override = default;
+
+    void check(LoginStack &, Database<User> &, Database<Book> &, Log &) override;
+
+    void execute(LoginStack &, Database<User> &, Database<Book> &, Log &) override;
+
+private:
+    std::string input;
+};
+
 #endif //BOOKSTORE_OPERATION_HPP

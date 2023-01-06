@@ -44,13 +44,15 @@ void op_su::check(LoginStack &login, Database<User> &dtb, Database<Book> &, Log 
     ::check(password, "uop");
 }
 
-void op_su::execute(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &) {
+void op_su::execute(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &log) {
     if (count == 2) {
         login.login(user);
+        log.add_log("[info]" + user + " successfully login.");
     }
     else {
         if (password == dtb.find(user.c_str()).Password) {
             login.login(user);
+            log.add_log("[info]" + user + " successfully login.");
         }
         else {
             error();
@@ -65,8 +67,10 @@ void op_logout::check(LoginStack &, Database<User> &, Database<Book> &, Log &) {
     if (scanner.getTokenCount() != 1) error();
 }
 
-void op_logout::execute(LoginStack &login, Database<User> &, Database<Book> &, Log &) {
+void op_logout::execute(LoginStack &login, Database<User> &, Database<Book> &, Log &log) {
+    std::string user = login.getUser();
     login.logout();
+    log.add_log("[info]" + user + " logout.");
 }
 
 op_register::op_register(const std::string &str) { input = str; }
@@ -83,10 +87,11 @@ void op_register::check(LoginStack &, Database<User> &, Database<Book> &, Log &)
     ::check(username, "username");
 }
 
-void op_register::execute(LoginStack &, Database<User> &dtb, Database<Book> &, Log &) {
+void op_register::execute(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &log) {
     if (dtb.find(userID.c_str()).Privilege) error();
     User newUser(userID, password, username, 1);
     dtb.insert(userID.c_str(), newUser);
+    log.add_log("[info]" + userID + " registered by " + login.getUser() + ".");
 }
 
 op_passwd::op_passwd(const std::string &str) { input = str; }
@@ -111,7 +116,7 @@ void op_passwd::check(LoginStack &login, Database<User> &dtb, Database<Book> &, 
     ::check(currentPassword, "uop");
 }
 
-void op_passwd::execute(LoginStack &, Database<User> &dtb, Database<Book> &, Log &) {
+void op_passwd::execute(LoginStack &, Database<User> &dtb, Database<Book> &, Log &log) {
     User cur = dtb.find(user.c_str());
     if (!cur.Privilege) error();
     if (count == 3) {
@@ -120,6 +125,7 @@ void op_passwd::execute(LoginStack &, Database<User> &dtb, Database<Book> &, Log
             cur.Password[i] = newPassword[i];
         }
         dtb.modify(cur.UserID, cur);
+        log.add_log("[info]" + user + " password changed by root.");
     }
     else {
         if (currentPassword == cur.Password) {
@@ -128,6 +134,7 @@ void op_passwd::execute(LoginStack &, Database<User> &dtb, Database<Book> &, Log
                 cur.Password[i] = newPassword[i];
             }
             dtb.modify(cur.UserID, cur);
+            log.add_log("[info]" + user + " password changed.");
         }
         else error();
     }
@@ -151,12 +158,13 @@ void op_useradd::check(LoginStack &login, Database<User> &dtb, Database<Book> &,
     privilege = stoi(pvl_temp);
 }
 
-void op_useradd::execute(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &) {
+void op_useradd::execute(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &log) {
     if (dtb.find(userID.c_str()).Privilege) error();
     int pvl = dtb.find(login.getUser().c_str()).Privilege;
     if (pvl <= privilege) error();
     User newUser(userID, password, username, privilege);
     dtb.insert(userID.c_str(), newUser);
+    log.add_log("[info]" + login.getUser() + " added user " + userID + ".");
 }
 
 op_delete::op_delete(const std::string &str) { input = str; }
@@ -170,10 +178,11 @@ void op_delete::check(LoginStack &login, Database<User> &dtb, Database<Book> &, 
     ::check(userID, "uop");
 }
 
-void op_delete::execute(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &) {
+void op_delete::execute(LoginStack &login, Database<User> &dtb, Database<Book> &, Log &log) {
     if (login.checkLogin(userID)) error();
     if (!dtb.find(userID.c_str()).Privilege) error();
     dtb.erase(userID.c_str());
+    log.add_log("[info]" + userID + " deleted by root.");
 }
 
 op_show::op_show(const std::string &str) { input = str; }
@@ -192,9 +201,10 @@ void op_show::check(LoginStack &login, Database<User> &dtb, Database<Book> &, Lo
     }
 }
 
-void op_show::execute(LoginStack &, Database<User> &, Database<Book> &dtb, Log &) {
+void op_show::execute(LoginStack &login, Database<User> &, Database<Book> &dtb, Log &log) {
     if (count == 1) { dtb.show_books("all", "all"); }
     else { dtb.show_books(para, val); }
+    log.add_log("[info]" + login.getUser() + " querying books.");
 }
 
 op_buy::op_buy(const std::string &str) { input = str; }
@@ -211,14 +221,16 @@ void op_buy::check(LoginStack &login, Database<User> &dtb, Database<Book> &, Log
     Quantity = std::stoi(Quantity_temp);
 }
 
-void op_buy::execute(LoginStack &, Database<User> &, Database<Book> &dtb, Log &log) {
+void op_buy::execute(LoginStack &login, Database<User> &, Database<Book> &dtb, Log &log) {
     if (Quantity <= 0) error();
     Book cur = dtb.find(ISBN.c_str());
     if (cur.stock < Quantity) error();
     cur.stock -= Quantity;
     dtb.modify(ISBN.c_str(), cur);
-    std::cout << cur.Price * Quantity << '\n';
+    std::cout << cur.Price * Quantity << std::endl;
     log.add_finance(cur.Price * Quantity);
+    log.add_log("[info]" + login.getUser() + " bought books.");
+    log.add_log("[finance] income + " + std::to_string(cur.Price * Quantity));
 }
 
 op_select::op_select(const std::string &str) { input = str; }
@@ -232,7 +244,7 @@ void op_select::check(LoginStack &login, Database<User> &dtb, Database<Book> &, 
     ::check(ISBN, "ISBN");
 }
 
-void op_select::execute(LoginStack &login, Database<User> &, Database<Book> &dtb, Log &) {
+void op_select::execute(LoginStack &login, Database<User> &, Database<Book> &dtb, Log &log) {
     Book cur = dtb.find(ISBN.c_str());
     if (cur.ISBN[0] == '\0') {
         Book newBook;
@@ -240,8 +252,10 @@ void op_select::execute(LoginStack &login, Database<User> &, Database<Book> &dtb
             newBook.ISBN[i] = ISBN[i];
         }
         dtb.insert(newBook.ISBN, newBook);
+        log.add_log("[info]book created.");
     }
     login.select(ISBN);
+    log.add_log("[info]" + login.getUser() + " selected book.");
 }
 
 op_modify::op_modify(const std::string &str) { input = str; }
@@ -250,7 +264,7 @@ void op_modify::check(LoginStack &login, Database<User> &dtb, Database<Book> &, 
     if (dtb.find(login.getUser().c_str()).Privilege < 3) error();
 }
 
-void op_modify::execute(LoginStack &login, Database<User> &, Database<Book> &dtb, Log &) {
+void op_modify::execute(LoginStack &login, Database<User> &, Database<Book> &dtb, Log &log) {
     if (login.getISBN().empty()) error();
     Book cur = dtb.find(login.getISBN().c_str());
     std::string temp = cur.ISBN;
@@ -309,6 +323,7 @@ void op_modify::execute(LoginStack &login, Database<User> &, Database<Book> &dtb
         dtb.modify(cur.ISBN, cur);
     }
     login.select(cur.ISBN);
+    log.add_log("[info]" + login.getUser() + " modified book.");
 }
 
 op_import::op_import(const std::string &str) { input = str; }
@@ -333,6 +348,8 @@ void op_import::execute(LoginStack &login, Database<User> &, Database<Book> &dtb
     cur.stock += Quantity;
     dtb.modify(login.getISBN().c_str(), cur);
     log.add_finance(-1 * TotalCost);
+    log.add_log("[info]" + login.getUser() + " imported books.");
+    log.add_log("[finance] spending - " + std::to_string(TotalCost));
 }
 
 op_show_finance::op_show_finance(const std::string &str) { input = str; }
@@ -356,4 +373,15 @@ void op_show_finance::check(LoginStack &login, Database<User> &dtb, Database<Boo
 
 void op_show_finance::execute(LoginStack &, Database<User> &, Database<Book> &, Log &log) {
     log.show_finance(fcount);
+}
+
+op_log::op_log(const std::string &str) { input = str; }
+
+void op_log::check(LoginStack &, Database<User> &, Database<Book> &, Log &) {
+    TokenScanner scanner(input);
+    if (scanner.getTokenCount() != 1) error();
+}
+
+void op_log::execute(LoginStack &, Database<User> &, Database<Book> &, Log &log) {
+    log.show_log();
 }
