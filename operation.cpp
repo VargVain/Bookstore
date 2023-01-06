@@ -267,24 +267,28 @@ void op_modify::execute(LoginStack &login, Database<User> &, Database<Book> &dtb
             if (table[0]) error();
             //if (!strcmp(val.c_str(), cur.ISBN)) error();
             if (dtb.find(val.c_str()).ISBN[0] != '\0') error();
+            memset(cur.ISBN, 0, sizeof(cur.ISBN));
             memmove(cur.ISBN, val.c_str(), val.length() * sizeof(char));
             //for (int j = 0; j < val.length(); ++j) { cur.ISBN[j] = val[j]; }
             table[0] = true;
         }
         else if (para == "name") {
             if (table[1]) error();
+            memset(cur.BookName, 0, sizeof(cur.BookName));
             memmove(cur.BookName, val.c_str(), val.length() * sizeof(char));
             //for (int j = 0; j < val.length(); ++j) { cur.BookName[j] = val[j]; }
             table[1] = true;
         }
         else if (para == "author") {
             if (table[2]) error();
+            memset(cur.Author, 0, sizeof(cur.Author));
             memmove(cur.Author, val.c_str(), val.length() * sizeof(char));
             //for (int j = 0; j < val.length(); ++j) { cur.Author[j] = val[j]; }
             table[2] = true;
         }
         else if (para == "keyword") {
             if (table[3]) error();
+            memset(cur.Keyword, 0, sizeof(cur.Keyword));
             memmove(cur.Keyword, val.c_str(), val.length() * sizeof(char));
             //for (int j = 0; j < val.length(); ++j) { cur.Keyword[j] = val[j]; }
             table[3] = true;

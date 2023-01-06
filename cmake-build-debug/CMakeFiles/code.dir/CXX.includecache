@@ -66,6 +66,10 @@ log.hpp
 iomanip
 /mnt/c/Dev/Bookstore/iomanip
 
+/mnt/c/Dev/Bookstore/operation.cpp
+operation.hpp
+/mnt/c/Dev/Bookstore/operation.hpp
+
 /mnt/c/Dev/Bookstore/operation.hpp
 string
 -

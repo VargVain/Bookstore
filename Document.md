@@ -45,7 +45,9 @@
 
 ### 代码逻辑说明：
 
-`main`函数只负责循环处理输入信息，由一个封装的函数调用各个类的对应接口。
+`main`函数只负责循环处理输入信息，具体操作由`operation`类的多个派生类完成。
+
+`operation`类会对输入的整行文字进行分段、检查合法性以及执行，并在这一过程中调用各个类。
 
 主要类有：
 
@@ -53,11 +55,15 @@ tokenScanner类 负责将输入变为片段
 
 error类 负责输出错误信息
 
-login类 负责处理登录栈
+database类 负责以块状链表存储信息
 
-user类 存储账户并提供更改账户信息的接口
+operation类 负责具体处理操作
 
-stock类 存储图书信息并提供图书操作的接口
+login类 负责处理登录栈的各种操作
+
+user类 存储账户信息
+
+book类 存储图书信息
 
 log类 提供日志操作
 
@@ -66,87 +72,71 @@ log类 提供日志操作
 ##### tokenScanner类
 接口：
 
-`setInput(std::string str)`输入
+`std::string nextToken()`返回下一个片段
 
-`bool hasMoreTokens()`判断是否有剩余片段
-
-`std::string nextToken()`读取并返回下一个片段
-
-`bool CheckScanner(TokenScanner scanner, something)`检查输入是否符合格式
+`int getTokenCount()`获得总片段数
 
 ##### error类（继承自std::exception）
 接口：
 
-`ErrorException(std::string message)`记录错误信息
+`ErrorException()`返回错误信息
 
-`std::string getMessage() const`返回错误信息
+`void error()`抛出错误信息
 
-成员：
+##### database类
+接口：
 
-`std::string message`错误信息
+`void insert(const char *_key, T _val)`插入数据
 
-`void error(std::string message)`输出错误信息（其实不属于Error类中）
+`void erase(const char *_key)`删除数据
+
+`void modify(const char *_key, T _val)`调整数据
+
+`T find(const char *_key)`寻找数据
 
 ##### login类：
 接口：
 
-`user getCurrentUser()`返回当前用户
+`void select(const std::string &ISBN)`让当前用户选择指定书
 
-`void Login(std::string ID)`登录指定ID的用户
+`void login(std::string ID)`登录指定ID的用户
 
-`void Logout()`退出最后登录者的登录
+`void logout()`退出最后登录者的登录
 
-成员：
+`bool checkLogin(const std::string &UserID)`检查用户是否登录
 
-`std::stack< std::string > LoginStack`登录栈
+`void flush(const std::string &ord, const std::string &change)`
+ISBN数据更新时，刷新所有指定该书的数据
 
 ##### user类：
-接口：
-
-`bool checkPasswd(std::string ID, std::string passwd)`检验密码
-
-`void addUser(std::string ID, std::string passwd, int privilege, std::string username)`创建信息如指令格式所示的帐户
-
-`void deleteUser(std::string ID)`删除指定帐户
 
 成员：
 
-`struct account{}`存储用户信息，包括ID、用户名、密码、权限等级
+`char UserID[30];
+char Password[30];
+char Username[30];
+int Privilege;`存储用户信息，包括ID、用户名、密码、权限等级
 
-`std::map<std::string, account> accountTable`存储所有账户，以ID为索引
-
-##### stock类：
-接口：
-
-`void showBook(std::string s)`以 `[ISBN] `字典升序依次输出满足要求的图书信息
-
-`double buyBook(std::string ISBN, int quantity)`购买指定数量的指定图书（由于本系统不包括支付系统，故仅需减少库存），以浮点数输出购买图书所需的总金额。
-
-`void selectBook(std::string ISBN)`以当前帐户选中指定图书
-
-`void modify(std::string, std::string, std::string, std::string, double)`以指令中的信息更新选中图书的信息
-
-`void import(int Quantity, double TotalCost)`以指定交易总额购入指定数量的选中图书，增加其库存数
+##### book类：
 
 成员：
 
-`struct book{}`存储图书信息，包括ISBN、库存数量、价格等
-
-`std::map<std::string, book> bookTable`存储所有图书，以ISBN为索引
+`char ISBN[20];
+char BookName[60];
+char Author[60];
+char Keyword[60];
+double Price;
+int stock;`存储图书信息，包括ISBN、库存数量、价格等
 
 ##### log类：
 接口：
 
-`void log_business(int count)`输出最后count笔交易记录
+`void void add_finance(double val)`新增交易记录
 
-`void log()`返回赏心悦目的日志记录
-
-成员：
-
-`std::vector<int>` 交易记录
-
-`std::vector< std::string > logTable` 日志记录 
+`void show_finance(int count)`输出最后count笔交易记录
 
 ### 文件存储说明：
 
-所有运行过程中产生的信息都存储在相关的文本文档中。
+程序运行中的user与book信息存储于块状链表库中。
+
+登陆栈信息与日志信息独立存储于文件中。

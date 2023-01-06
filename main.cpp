@@ -9,7 +9,7 @@
 #include "iomanip"
 
 int main() {
-    //freopen("1.in", "r", stdin);
+    //freopen("3.in", "r", stdin);
     //freopen("wa.out", "w", stdout);
     Database<User> usersData("users");
     Database<Book> booksData("books");
@@ -21,9 +21,9 @@ int main() {
     LoginStack login;
     Operation *op = nullptr;
     std::cout << std::fixed << std::setprecision(2);
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
-    std::cout.tie(nullptr);
+    //std::ios::sync_with_stdio(false);
+    //std::cin.tie(nullptr);
+    //std::cout.tie(nullptr);
     while (true) {
         try {
             std::string input;

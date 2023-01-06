@@ -358,8 +358,8 @@ void Database<T>::show_books(const std::string &para, const std::string &val) {
             flag = true;
         }
         dest = getInt(dest, 0);
-        if (!flag) std::cout << '\n';
     }
+    if (!flag) std::cout << '\n';
 }
 
 #endif //BOOKSTORE_DATABASE_HPP
